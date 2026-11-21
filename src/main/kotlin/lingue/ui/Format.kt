@@ -1,5 +1,6 @@
 package lingue.ui
 
+import lingue.app.Circle
 import java.time.Duration
 import java.time.Instant
 
@@ -50,3 +51,23 @@ fun formatNextDue(from: Instant, to: Instant): String {
 
 fun formatCount(count: Int, one: String, few: String, many: String): String =
     "$count ${plural(count.toLong(), one, few, many)}"
+
+/**
+ * "Закрепление ●○ · ещё 1 верный ответ" — the answer panel's line for a word in
+ * the learning circle, in place of the next-repeat line an ordinary answer gets.
+ */
+fun circleLine(circle: Circle, now: Instant, nextDue: Instant): String = when (circle) {
+    is Circle.Going -> {
+        val dots = "●".repeat(circle.done) + "○".repeat(circle.total - circle.done)
+        val left = circle.total - circle.done
+        val note = when {
+            circle.slow -> "медленный ответ шаг не засчитывает"
+            circle.done == 0 && left == 1 -> "нужен 1 верный ответ"
+            circle.done == 0 -> "нужно ${formatCount(left, "верный ответ", "верных ответа", "верных ответов")} подряд"
+            else -> "ещё ${formatCount(left, "верный ответ", "верных ответа", "верных ответов")}"
+        }
+        "Закрепление $dots · $note"
+    }
+    is Circle.Graduated -> "Закреплено ${"●".repeat(circle.total)} · следующий повтор ${formatNextDue(now, nextDue)}"
+    Circle.Paused -> "На сегодня хватит · слово вернётся завтра"
+}

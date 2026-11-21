@@ -1,5 +1,8 @@
 package lingue.app
 
+import io.github.openspacedrepetition.Rating
+import io.github.openspacedrepetition.State
+import lingue.core.Direction
 import lingue.core.Question
 import lingue.data.Database
 import lingue.data.WordRepository
@@ -163,5 +166,86 @@ class SynonymTest {
         assertNull(trainer.synonymCandidate)
         assertNull(trainer.drill, "there is no misspelling to repair — it was a different valid word")
         assertTrue(words.allSynonyms().isNotEmpty())
+    }
+
+    /**
+     * An old word whose typing card is due today and in review, so a miss sends
+     * it into relearning — the case of a synonym typed for a word long known.
+     */
+    private fun dueTypingSession(asked: String, other: String): Pair<Trainer, Long> {
+        val monthAgo = now.minus(Duration.ofDays(30))
+        val askedWord = words.add(asked, "крім того", now = monthAgo)
+        words.add(other, "окрім цього", now = monthAgo)
+        (1..4).forEach { words.add("filler$it", "щосьінше$it", now = monthAgo) }
+        words.all().forEach { words.graduateRecognition(it.id, at = now.minus(Duration.ofDays(1))) }
+        val production = words.cardsOf(askedWord.id).first { it.direction == Direction.PRODUCTION }
+        words.answer(production, Rating.EASY, at = monthAgo)
+        val trainer = trainer().apply { reload() }
+        while (trainer.question?.card?.id != production.id) {
+            assertNotNull(trainer.question, "the asked word's typing card never came up")
+            trainer.advance()
+        }
+        return trainer to production.id
+    }
+
+    private fun lastReview(cardId: Long): Pair<Int, Int> =
+        database.connection.prepareStatement(
+            "SELECT rating, correct FROM reviews WHERE card_id = ? ORDER BY id DESC LIMIT 1",
+        ).use { statement ->
+            statement.setLong(1, cardId)
+            statement.executeQuery().use { rows -> rows.next(); rows.getInt(1) to rows.getInt(2) }
+        }
+
+    @Test
+    fun `accepting the link turns the miss into a right answer`() {
+        val (trainer, cardId) = dueTypingSession("besides", "other than that")
+        val lapsesBefore = assertNotNull(words.findCard(cardId)).lapses
+        trainer.answerTyping("other than that")
+        assertEquals(false, assertNotNull(trainer.feedback).correct)
+
+        trainer.acceptSynonym()
+
+        assertTrue(assertNotNull(trainer.feedback).correct, "the panel now says it was right")
+        val (rating, correct) = lastReview(cardId)
+        assertTrue(rating != Rating.AGAIN.value, "the review is no longer a miss")
+        assertEquals(1, correct)
+        val card = assertNotNull(words.findCard(cardId))
+        assertEquals(State.REVIEW, card.state, "a word known all along does not go into relearning")
+        assertEquals(lapsesBefore, card.lapses)
+        assertTrue(words.misspellings().none { it.typed == "other than that" }, "a synonym is not a misspelling")
+    }
+
+    @Test
+    fun `a word whose miss was a synonym does not come round again`() {
+        val (trainer, cardId) = dueTypingSession("besides", "other than that")
+        trainer.answerTyping("other than that")
+
+        trainer.acceptSynonym()
+
+        assertTrue(trainer.queuedCards().drop(1).none { it.id == cardId })
+    }
+
+    @Test
+    fun `picking a synonym's translation counts once the link is accepted`() {
+        val monthAgo = now.minus(Duration.ofDays(30))
+        val asked = words.add("besides", "крім того", now = monthAgo)
+        (1..4).forEach { words.add("filler$it", "щосьінше$it", now = monthAgo) }
+        // Both directions in review and due; burying keeps recognition, the older card.
+        words.cardsOf(asked.id).forEach { words.answer(it, Rating.EASY, at = monthAgo) }
+        val recognition = words.cardsOf(asked.id).first { it.direction == Direction.RECOGNITION }
+        val trainer = trainer().apply { reload() }
+        while (trainer.question?.card?.id != recognition.id) {
+            assertNotNull(trainer.question, "the asked word never came up")
+            trainer.advance()
+        }
+        val question = assertNotNull(trainer.question as? Question.Choice)
+        trainer.understood()
+        trainer.answerChoice((question.correctIndex + 1) % question.options.size)
+
+        trainer.acceptSynonym()
+
+        assertTrue(assertNotNull(trainer.feedback).correct)
+        assertEquals(1, lastReview(recognition.id).second)
+        assertEquals(State.REVIEW, assertNotNull(words.findCard(recognition.id)).state)
     }
 }

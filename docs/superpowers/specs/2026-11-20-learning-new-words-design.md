@@ -109,6 +109,12 @@ themselves. Counted over every card, five words missed in a row each went back
 behind the other four, and nothing else was asked until all five left the
 circle — found in use on the first day.
 
+*Amended 2026-11-21:* the answer panel shows a word's progress through the
+circle (right answers in a row given and needed, a slow answer not counting,
+out of answers for today), since a right answer that brings the word back
+looked like the session looping. Accepting a synonym now re-grades the answer
+just given as right.
+
 This makes the circle the scheduler's own learning steps, not a parallel
 mechanism. Measured against the library in use
 (`io.github.open-spaced-repetition:fsrs:1.0.0`, default `Scheduler`):

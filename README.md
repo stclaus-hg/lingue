@@ -45,7 +45,10 @@ before it is reviewed:
    more after a miss, at most four per session. A forgotten older card circles
    back the same way. The four cards counted are ones not circling themselves,
    so several words missed at once take turns with the rest of the session
-   instead of crowding it out.
+   instead of crowding it out. After a miss it takes two right answers in a
+   row (one for a forgotten older word), and a slow one — over ten seconds —
+   does not count as a step. The answer panel shows where the word stands:
+   `Закрепление ●○ · ещё 1 верный ответ`, then `Закреплено ●●`.
 3. **Typing, from the next day.** A word's production card opens only once its
    recognition card is in review and was first answered on an earlier day.
 
@@ -115,7 +118,9 @@ trigger.
 
 Answering with a different word from the collection offers a one-click "this
 means the same" link. Linked words stop being offered as each other's wrong
-option, and each is accepted in place of the other.
+option, and each is accepted in place of the other. Accepting the link also
+turns the answer just given into a right one: it was a valid meaning, so the
+word is not sent round the learning circle for it.
 
 The pair is recorded when it is met rather than declared upfront: no string
 metric can separate a good distractor (`предсказуемый` / `непредсказуемый` —

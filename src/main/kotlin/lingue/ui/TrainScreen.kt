@@ -491,8 +491,15 @@ private fun FeedbackPanel(
 
             if (!compact) {
                 Spacer(Modifier.height(8.dp))
+                // In the circle the next repeat is a few cards away, not at the
+                // scheduler's time, so progress through it is what is worth saying.
+                val circle = feedback.circle
                 Text(
-                    text = "Повтор ${formatNextDue(Instant.now(), feedback.nextDue)} · оценка «${ratingLabel(feedback.rating)}»",
+                    text = if (circle != null) {
+                        circleLine(circle, Instant.now(), feedback.nextDue)
+                    } else {
+                        "Повтор ${formatNextDue(Instant.now(), feedback.nextDue)} · оценка «${ratingLabel(feedback.rating)}»"
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

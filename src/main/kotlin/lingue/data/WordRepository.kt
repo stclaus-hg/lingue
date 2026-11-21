@@ -210,6 +210,27 @@ class WordRepository(private val connection: Connection) {
     }
 
     /**
+     * Rewrites the latest answer to [cardId] as a right one with [rating].
+     *
+     * For an answer that turned out to be a synonym: it was right all along, so
+     * the history should say so. It was never a confusion either.
+     */
+    fun regradeLastReview(cardId: Long, rating: Rating, correct: Boolean) {
+        connection.prepareStatement(
+            """
+            UPDATE reviews
+               SET rating = ?, correct = ?, confused_with_word_id = NULL
+             WHERE id = (SELECT MAX(id) FROM reviews WHERE card_id = ?)
+            """.trimIndent(),
+        ).use { statement ->
+            statement.setInt(1, rating.value)
+            statement.setInt(2, if (correct) 1 else 0)
+            statement.setLong(3, cardId)
+            statement.executeUpdate()
+        }
+    }
+
+    /**
      * Spellings that were typed but are not the expected one, newest first.
      *
      * Feeds the "words I keep misspelling" view; the drill itself does not need
@@ -223,6 +244,7 @@ class WordRepository(private val connection: Connection) {
               JOIN cards c ON c.id = r.card_id
               JOIN words w ON w.id = c.word_id
              WHERE r.answer_text IS NOT NULL
+               AND r.correct = 0
                AND LOWER(TRIM(r.answer_text)) <> LOWER(w.term)
              GROUP BY w.term, LOWER(TRIM(r.answer_text))
              ORDER BY times DESC, last_seen DESC

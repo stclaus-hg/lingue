@@ -2,6 +2,8 @@ package lingue.core
 
 import io.github.openspacedrepetition.Rating
 import io.github.openspacedrepetition.Scheduler
+import io.github.openspacedrepetition.State
+import java.time.Duration
 import java.time.Instant
 
 /**
@@ -14,8 +16,25 @@ import java.time.Instant
  * reimplemented here.
  */
 class ReviewEngine(
-    private val scheduler: Scheduler = Scheduler.builder().build(),
+    // The library's own defaults, stated here because the trainer needs to know
+    // how many there are and the scheduler does not say.
+    private val learningSteps: List<Duration> = listOf(Duration.ofMinutes(1), Duration.ofMinutes(10)),
+    private val relearningSteps: List<Duration> = listOf(Duration.ofMinutes(10)),
 ) {
+    private val scheduler: Scheduler = Scheduler.builder()
+        .learningSteps(learningSteps.toTypedArray())
+        .relearningSteps(relearningSteps.toTypedArray())
+        .build()
+
+    /**
+     * Right answers in a row a card in [state] needs to leave its steps: two for
+     * a word being learned, one for a forgotten word being relearned, none in review.
+     */
+    fun stepsIn(state: State): Int = when (state) {
+        State.LEARNING -> learningSteps.size
+        State.RELEARNING -> relearningSteps.size
+        else -> 0
+    }
 
     fun apply(card: StudyCard, rating: Rating, now: Instant = Instant.now()): StudyCard {
         val scheduled = scheduler.reviewCard(card.card, rating, now, null).card()

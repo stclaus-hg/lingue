@@ -40,7 +40,27 @@ data class Feedback(
     val given: String,
     val rating: Rating,
     val nextDue: Instant,
+    /** Where the word stands in the learning circle; `null` for an ordinary repeat. */
+    val circle: Circle? = null,
 )
+
+/**
+ * A word's way through the learning circle, as the answer panel shows it.
+ *
+ * Without it a right answer that brings the word back again looks like the
+ * session going in circles — the rule (two right answers in a row, a slow one
+ * not counting) is FSRS's and invisible otherwise.
+ */
+sealed interface Circle {
+    /** Comes back a few cards later; [done] of [total] right answers in a row given. */
+    data class Going(val done: Int, val total: Int, val slow: Boolean) : Circle
+
+    /** Left the circle with this answer, after [total] right answers in a row. */
+    data class Graduated(val total: Int) : Circle
+
+    /** Still unlearned, but out of answers for today. */
+    data object Paused : Circle
+}
 
 /**
  * A spelling exercise, run after the review has already been graded.
@@ -377,6 +397,7 @@ class Trainer(
         feedback = null
         drill = null
         synonymCandidate = null
+        missed = null
 
         // A card the builder cannot ask in its own format is skipped rather than
         // asked in the other one; see QuestionBuilder.build.
@@ -439,6 +460,7 @@ class Trainer(
             // Only a wrong pick says anything about what gets confused.
             confusedWith = picked?.id?.takeIf { !correct },
             candidate = picked?.takeIf { !correct },
+            ratingIfSynonym = { Grading.forChoice(true, elapsed) },
         )
     }
 
@@ -482,6 +504,7 @@ class Trainer(
             elapsed = elapsed,
             answerText = Grading.asAnswered(current.expected, typed),
             candidate = if (accepted == null) wordWithTerm(typed) else null,
+            ratingIfSynonym = { synonym -> Grading.forTyping(synonym.term, typed, elapsed) },
         )
     }
 
@@ -497,10 +520,10 @@ class Trainer(
     /**
      * Records that the answer given means the same as the one expected.
      *
-     * Deliberately does not re-grade the card that has just been answered: the
-     * review is already written, and rewriting history to be kinder would put a
-     * guess into the memory model. The card returns within the minute, and by then
-     * the pair is known.
+     * The answer just given is graded again as right: it was a valid meaning,
+     * not a lapse, and leaving it a miss sent a long-known word round the
+     * learning circle. This is not a kinder guess put into the memory model —
+     * the user did recall a correct answer, the pair simply was not known yet.
      */
     fun acceptSynonym() {
         val candidate = synonymCandidate ?: return
@@ -509,10 +532,63 @@ class Trainer(
         words.linkSynonyms(asked.id, candidate.id)
         synonyms = words.allSynonyms()
         synonymCandidate = null
+        regradeAsRight(candidate)
 
         // The spelling exercise was started by what looked like a misspelling and
         // turned out to be a different valid word. There is nothing to repair.
         drill = null
+    }
+
+    /** The answer just given, while it was a miss that a synonym could still turn right. */
+    private class Missed(val before: StudyCard, val at: Instant, val ratingIfSynonym: (Word) -> Rating)
+
+    private var missed: Missed? = null
+
+    /**
+     * Grades the miss just made again, as the right answer it turned out to be.
+     *
+     * The answer was [synonym] — a valid meaning, not a lapse — so the card is
+     * scheduled from its state before the answer, as if the synonym had been
+     * known all along, and leaves the circle unless that grade keeps it there.
+     */
+    private fun regradeAsRight(synonym: Word) {
+        val miss = missed ?: return
+        val shown = feedback ?: return
+        missed = null
+
+        val rating = miss.ratingIfSynonym(synonym)
+        val updated = engine.apply(miss.before, rating, miss.at)
+        words.update(updated)
+        words.regradeLastReview(updated.id, rating, correct = true)
+
+        val day = LocalDate.ofInstant(miss.at, zone)
+        val answersToday = answersOn(day)
+        queue.removeAll { it.id == updated.id }
+        if (updated.isLearning() && (answersToday[updated.id] ?: 0) < CIRCLE_ANSWER_LIMIT) {
+            queue.add(requeuePosition(answersToday), updated)
+        }
+
+        feedback = shown.copy(
+            correct = true,
+            rating = rating,
+            nextDue = updated.due,
+            circle = circleOf(miss.before, updated, rating, correct = true, answers = answersToday[updated.id] ?: 1),
+        )
+        publishProgress(words.introducedOn(day, zone), words.repeatsOn(day, zone))
+    }
+
+    private fun circleOf(before: StudyCard, after: StudyCard, rating: Rating, correct: Boolean, answers: Int): Circle? {
+        if (after.state == State.REVIEW) {
+            val total = engine.stepsIn(before.state)
+            return if (total > 0) Circle.Graduated(total) else null
+        }
+        if (answers >= CIRCLE_ANSWER_LIMIT) return Circle.Paused
+        return Circle.Going(
+            done = after.card.step ?: 0,
+            total = engine.stepsIn(after.state),
+            // HARD keeps a card on its step: right, but not a step forward.
+            slow = correct && rating == Rating.HARD,
+        )
     }
 
     /**
@@ -543,9 +619,11 @@ class Trainer(
         confusedWith: Long? = null,
         answerText: String? = null,
         candidate: Word? = null,
+        ratingIfSynonym: ((Word) -> Rating)? = null,
     ) {
         val now = clock()
         val updated = engine.apply(card, rating, now)
+        missed = if (correct || ratingIfSynonym == null) null else Missed(card, now, ratingIfSynonym)
 
         words.update(updated)
         words.logReview(updated, rating, correct, elapsed.toMillis(), now, confusedWith, answerText)
@@ -574,6 +652,7 @@ class Trainer(
             given = given,
             rating = rating,
             nextDue = updated.due,
+            circle = circleOf(card, updated, rating, correct, answers),
         )
 
         // Recounted from the history rather than carried over: the header would
