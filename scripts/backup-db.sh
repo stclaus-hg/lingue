@@ -10,7 +10,7 @@
 # If the push fails (offline), the snapshot stays committed locally, the script
 # exits non-zero, and the next run pushes it.
 #
-# Run every morning at 08:00 by the systemd timer that install-backup.sh sets up.
+# Run every evening at 22:00 by the systemd timer that install-backup.sh sets up.
 #
 # Environment (defaults in brackets):
 #   LINGUE_DB             database to back up   [~/.local/share/lingue/lingue.db]

@@ -2,13 +2,13 @@
 #
 # Sets up the database backup: installs backup-db.sh and restore-db.sh as
 # ~/.local/bin/lingue-backup and ~/.local/bin/lingue-restore, adds a systemd
-# user timer that runs the backup every morning at 08:00, and takes the first
+# user timer that runs the backup every evening at 22:00, and takes the first
 # snapshot.
 #
-# Morning rather than midnight: the laptop is off at night, and a morning run
-# picks up the previous evening's answers. Persistent=true makes a run missed
-# while the computer was off or asleep happen as soon as it is back on; a
-# failed run (no network yet) is retried every 15 minutes.
+# 22:00 rather than midnight: the laptop is off at midnight but still on at ten,
+# so the day's answers reach GitHub the same evening. Persistent=true makes a
+# run missed while the computer was off or asleep happen as soon as it is back
+# on; a failed run (no network yet) is retried every 15 minutes.
 #
 # No sudo involved. Re-run after changing the scripts.
 #
@@ -40,10 +40,10 @@ EOF
 
 cat > "$UNITS/lingue-backup.timer" <<'EOF'
 [Unit]
-Description=Morning backup of the Lingue database
+Description=Evening backup of the Lingue database
 
 [Timer]
-OnCalendar=*-*-* 08:00:00
+OnCalendar=*-*-* 22:00:00
 Persistent=true
 
 [Install]
