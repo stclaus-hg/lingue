@@ -1,0 +1,11 @@
+# Phrasal verbs from work conversations. The example goes in the third column:
+# it is shown on the recognition card only, where the English term is already
+# on screen, so it never gives away a production answer.
+#
+# Import with: ./gradlew importWords -Pfile=data/phrasal-verbs-work.tsv
+to follow up	вернуться к вопросу, написать по итогам	I'll follow up with the client right after the call.
+to spin up	поднять, запустить (инстанс, окружение)	Just spin up a new instance and test it there.
+to narrow down	сузить (круг вариантов)	We narrowed it down to two possible causes.
+to scale up	масштабировать, нарастить	We'll need to scale up the workers before the campaign.
+to phase out	постепенно выводить из использования	We're phasing out the old API by the end of the year.
+to boil down to	сводиться к	It all boils down to a missing index.

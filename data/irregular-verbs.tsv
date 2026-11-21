@@ -1,0 +1,38 @@
+# Irregular verbs, first batch — 25 of the most common.
+#
+# Forms go in the term itself, comma-separated: the production card then asks for
+# all three at once, which is the knowledge that makes a verb irregular.
+# When answering, forms may be separated by commas or by spaces ("go went gone").
+# The card is recognised as a verb by this shape — exactly three single words —
+# and says "Напишите три формы глагола" instead of asking for a word.
+#
+# Do NOT use "/" here — it marks interchangeable alternatives, so "go / went / gone"
+# would accept "went" alone as a complete answer. Verbs with two past forms
+# (be — was/were) are left out of this scheme for that reason.
+#
+# Import with: ./gradlew importWords -Pfile=data/irregular-verbs.tsv
+go, went, gone	идти, ходить
+do, did, done	делать
+have, had, had	иметь
+say, said, said	сказать
+get, got, got	получать
+make, made, made	изготавливать, создавать
+know, knew, known	знать
+think, thought, thought	думать
+take, took, taken	брать
+see, saw, seen	видеть
+come, came, come	приходить
+give, gave, given	давать
+find, found, found	находить
+tell, told, told	рассказывать
+become, became, become	становиться
+leave, left, left	оставлять
+feel, felt, felt	чувствовать
+put, put, put	класть
+bring, brought, brought	приносить
+begin, began, begun	начинать
+keep, kept, kept	хранить, сохранять
+hold, held, held	держать
+write, wrote, written	писать
+stand, stood, stood	стоять
+hear, heard, heard	слышать

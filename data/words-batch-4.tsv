@@ -1,0 +1,14 @@
+# Fourth batch, work vocabulary with examples. Two entries from the same list
+# were already in the collection and were updated in place instead (keeping
+# their review history): "regardless" became "regardless of" (words-batch-3.tsv),
+# and "to consider" gained "обдумывать" and the "+ -ing" hint (words.tsv).
+# "hang / hang on" is split into two cards — two different meanings.
+#
+# Import with: ./gradlew importWords -Pfile=data/words-batch-4.tsv
+judging by	судя по	Judging by the logs, the job failed at 3 a.m.
+the vast majority	подавляющее большинство	The vast majority of errors come from one service.
+to be conscious of	помнить о, осознавать	I'm conscious of the time, so let's wrap up.
+to hang	зависать (о программе)	The app hangs on startup.
+hang on	подожди	Hang on, let me check.
+miserable	несчастный; мерзкий	The weather was miserable all week.
+a ceiling	потолок; верхний предел	We're close to the memory ceiling on this pod.

@@ -1,0 +1,14 @@
+# Build output and tool caches
+build/
+.gradle/
+.kotlin/
+
+# Local tooling state
+.claude/
+.superpowers/
+.idea/
+*.iml
+
+# Python
+__pycache__/
+*.pyc

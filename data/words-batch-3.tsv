@@ -1,0 +1,50 @@
+# Third batch, from a Quizlet export. Left out or merged:
+# - "to conclude", "decent" — already in the collection;
+# - "to serve" appeared twice with different senses — merged into one entry;
+# - "intention" (no translation given) and "intentions" — one entry, singular.
+#
+# Import with: ./gradlew importWords -Pfile=data/words-batch-3.tsv
+apparent	очевидный, явный
+a scholar	учёный
+an intention	намерение
+veins	вены
+martial	боевой, военный
+entirely	полностью, целиком
+to pop	внезапно появиться, выскочить, лопнуть
+regardless of	несмотря на, независимо от	Regardless of the cause, we need a fix today.
+to possess	владеть, обладать
+possession	владение
+slightly	слегка
+sincere	искренний
+a foreigner	иностранец
+apparently	по-видимому, похоже, что
+whatsoever	вообще (при отрицании)
+destiny	судьба
+capable	способный
+fortunate	удачливый, везучий
+to expose	разоблачать, раскрывать, подвергать
+simplistic	чрезмерно упрощённый, примитивный
+to serve	служить, обслуживать, подавать
+little by little	постепенно, понемногу
+to remain	оставаться
+to wipe	вытирать, стирать
+a tongue	язык
+though	хотя, однако
+a swing	качели
+to swing	качаться
+a duty	обязанность, долг
+prohibited	запрещённый
+to threaten	угрожать, ставить под угрозу
+supposedly	якобы
+hostile	враждебный
+towards	к, по отношению к
+certain	определённый, конкретный
+precious	драгоценный
+picky	привередливый, придирчивый
+that said	тем не менее
+a moron	придурок
+to shout	кричать
+to gain	обретать, приобретать
+to scatter	разбрасывать
+worthy	достойный, стоящий
+to stand out	выделяться
