@@ -515,6 +515,24 @@ class Trainer(
         drill = null
     }
 
+    /**
+     * Where a card going round the circle is put back: after the next
+     * [REQUEUE_GAP] cards that are not themselves going round it.
+     *
+     * Counting every card instead let several missed words take over the head
+     * of the queue — each went back behind the others, so with five of them
+     * circling nothing else was asked until all five left. Cards already
+     * answered today and still queued are the ones circling.
+     */
+    private fun requeuePosition(answersToday: Map<Long, Int>): Int {
+        var others = 0
+        queue.forEachIndexed { index, queued ->
+            if (queued.id !in answersToday) others++
+            if (others == REQUEUE_GAP) return index + 1
+        }
+        return queue.size
+    }
+
     private fun commit(
         card: StudyCard,
         rating: Rating,
@@ -546,7 +564,7 @@ class Trainer(
         val answers = (answersToday[card.id] ?: 0) + 1
         answersToday[card.id] = answers
         if (updated.isLearning() && answers < CIRCLE_ANSWER_LIMIT) {
-            queue.add(minOf(REQUEUE_GAP, queue.size), updated)
+            queue.add(requeuePosition(answersToday), updated)
         }
 
         answered++

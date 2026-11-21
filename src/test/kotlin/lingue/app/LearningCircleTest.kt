@@ -141,6 +141,40 @@ class LearningCircleTest {
     }
 
     @Test
+    fun `several words missed in a row do not hold back the rest of the session`() {
+        // Five forgotten words at once used to take over the head of the queue:
+        // each was put back four places from the front, where the other four
+        // were, so nothing else was asked until all five left the circle.
+        val old = seed(10, at = now.minus(Duration.ofDays(30)))
+        old.forEach { word ->
+            words.cardsOf(word.id).forEach { words.answer(it, Rating.EASY, at = now.minus(Duration.ofDays(30))) }
+        }
+        val trainer = trainer(Limits(newPerDay = 0, reviewsPerDay = 40)).apply { reload() }
+        fun Trainer.miss() {
+            val current = assertNotNull(question as? Question.Choice)
+            answerChoice((current.correctIndex + 1) % current.options.size)
+            advance()
+        }
+
+        val missed = mutableSetOf<Long>()
+        repeat(5) {
+            missed += assertNotNull(trainer.question).card.id
+            trainer.miss()
+        }
+        val next = (1..10).map {
+            val card = assertNotNull(trainer.question).card
+            if (card.id in missed) trainer.miss() else { trainer.answerChoiceCorrectly(); trainer.advance() }
+            card.id
+        }
+
+        assertTrue(next.count { it !in missed } >= 4, "other words are mixed in, got ${next.map { it in missed }}")
+        // ...and a missed word still waits at least four cards before it is asked again.
+        next.indices.groupBy { next[it] }.values.forEach { positions ->
+            positions.zipWithNext().forEach { (a, b) -> assertTrue(b - a > REQUEUE_GAP, "asked again after ${b - a - 1} cards") }
+        }
+    }
+
+    @Test
     fun `adding a word mid-circle does not lose the circling word`() {
         backdrop()
         seed(1)

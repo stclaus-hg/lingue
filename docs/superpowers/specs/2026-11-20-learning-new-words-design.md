@@ -104,6 +104,11 @@ usual, through `Grading.forChoice` and `ReviewEngine.apply`.
 its due time. The target is 3–5 other cards later, or the end of the queue if it
 is shorter. A card in `REVIEW` state leaves the session as it does now.
 
+*Amended 2026-11-21:* the gap counts only cards that are not circling
+themselves. Counted over every card, five words missed in a row each went back
+behind the other four, and nothing else was asked until all five left the
+circle — found in use on the first day.
+
 This makes the circle the scheduler's own learning steps, not a parallel
 mechanism. Measured against the library in use
 (`io.github.open-spaced-repetition:fsrs:1.0.0`, default `Scheduler`):

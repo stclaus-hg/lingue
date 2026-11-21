@@ -43,7 +43,9 @@ before it is reviewed:
 2. **The circle.** The word is asked as a choice question, then again four cards
    later, until FSRS moves it out of its learning steps — two correct answers,
    more after a miss, at most four per session. A forgotten older card circles
-   back the same way.
+   back the same way. The four cards counted are ones not circling themselves,
+   so several words missed at once take turns with the rest of the session
+   instead of crowding it out.
 3. **Typing, from the next day.** A word's production card opens only once its
    recognition card is in review and was first answered on an earlier day.
 
