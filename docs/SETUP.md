@@ -114,12 +114,14 @@ half-written; use the backup below instead.
 scripts/install-backup.sh   # once per machine
 ```
 
-Once a day a systemd user timer takes a snapshot of the database through
-SQLite's backup API (consistent even while the app is open) and commits it to
-the `backup` branch of this repository. The branch shares no history with
-`main`; each commit is one day's database, and a day with no changes makes no
-commit. A run missed while the computer was off happens at the next start; a
+Every morning at 08:00 a systemd user timer takes a snapshot of the database
+through SQLite's backup API (consistent even while the app is open) and commits
+it to the `backup` branch of this repository. The branch shares no history with
+`main`; each commit is one day's database, and a day with no answers makes no
+commit. Morning rather than midnight because the laptop is off at night; a run
+missed while the computer was off or asleep happens as soon as it is back on. A
 run without network keeps its commit locally and is retried every 15 minutes.
+Run `lingue-backup` by hand to snapshot right after a session.
 
 The local checkout of that branch is `~/.local/share/lingue/backup`.
 
