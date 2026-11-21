@@ -104,8 +104,40 @@ A single SQLite file:
 ~/.local/share/lingue/lingue.db
 ```
 
-Back it up by copying that file. It holds both the words and the full answer
-history.
+It holds both the words and the full answer history, so it is the one file that
+cannot be rebuilt. Copying it with `cp` while the app is open can catch it
+half-written; use the backup below instead.
+
+## Backup
+
+```bash
+scripts/install-backup.sh   # once per machine
+```
+
+Once a day a systemd user timer takes a snapshot of the database through
+SQLite's backup API (consistent even while the app is open) and commits it to
+the `backup` branch of this repository. The branch shares no history with
+`main`; each commit is one day's database, and a day with no changes makes no
+commit. A run missed while the computer was off happens at the next start; a
+run without network keeps its commit locally and is retried every 15 minutes.
+
+The local checkout of that branch is `~/.local/share/lingue/backup`.
+
+```bash
+lingue-backup                                    # snapshot now
+git -C ~/.local/share/lingue/backup log --oneline   # list snapshots
+lingue-restore                                   # restore the latest
+lingue-restore <commit>                          # restore a given day
+systemctl --user list-timers lingue-backup.timer # when the next run is
+journalctl --user -u lingue-backup.service       # what the runs said
+```
+
+`lingue-restore` refuses while the app is running, checks the snapshot's
+integrity first, and keeps the database it replaces as
+`lingue.db.before-restore`. On a new machine it fetches the snapshots itself.
+
+`scripts/test-backup-db.sh` exercises both scripts against a temporary
+directory and a local stand-in for GitHub.
 
 ## Layout
 

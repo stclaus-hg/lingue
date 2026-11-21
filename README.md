@@ -87,7 +87,7 @@ scripts/install-fsrs.sh   # once per machine
 ```
 
 See [docs/SETUP.md](docs/SETUP.md) for details, including where the data file
-lives and how to fit the algorithm's parameters to your own memory later.
+lives, the daily backup of it (`scripts/install-backup.sh`) and how to fit the algorithm's parameters to your own memory later.
 
 ## Spelling
 
