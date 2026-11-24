@@ -50,7 +50,10 @@ before it is reviewed:
    does not count as a step. The answer panel shows where the word stands:
    `Закрепление ●○ · ещё 1 верный ответ`, then `Закреплено ●●`.
 3. **Typing, from the next day.** A word's production card opens only once its
-   recognition card is in review and was first answered on an earlier day.
+   recognition card is in review and was first answered on an earlier day. By
+   then the meaning is known and only the spelling is new, so the typing card
+   has a single step: the first right answer settles it (next repeat in about
+   five days), and after a miss one right answer is enough.
 
 "Не знаю" on any choice question records a miss instead of a guess.
 
@@ -68,7 +71,9 @@ Grading is automatic, and it is the part worth arguing about:
   and rewarding every pick would stretch the interval on evidence that does not
   hold up without the options present.
 - **Typing** — graded strictly. The exact letters typed quickly are *easy*,
-  otherwise *good*; anything else is *again*. A production card asks whether the
+  otherwise *good*; anything else is *again*. "Quickly" is six seconds, or
+  3 s + 0.4 s per character for anything longer than seven — a flat limit made
+  a long phrase unable to count as fluent at all. A production card asks whether the
   word can be written, so a misspelling is not interference with the
   measurement — it is the thing being measured. Formatting stays forgiving: case,
   stray spaces and a leading "to" are not letters of the word.

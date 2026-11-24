@@ -115,6 +115,13 @@ out of answers for today), since a right answer that brings the word back
 looked like the session looping. Accepting a synonym now re-grades the answer
 just given as right.
 
+*Amended 2026-11-24:* a typing card has one learning step instead of two — its
+word's meaning is already settled by the time typing opens, so the first right
+answer settles it. Over half of first typings of known words were going round
+twice. The *easy* allowance for typing grows with the answer's length (6 s, or
+3 s + 0.4 s per character), since no answer of 20+ characters had ever made the
+flat six seconds.
+
 This makes the circle the scheduler's own learning steps, not a parallel
 mechanism. Measured against the library in use
 (`io.github.open-spaced-repetition:fsrs:1.0.0`, default `Scheduler`):

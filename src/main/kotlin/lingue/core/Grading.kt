@@ -16,8 +16,17 @@ object Grading {
     /** A correct pick slower than this reads as effortful rather than fluent. */
     private val SLOW_CHOICE: Duration = Duration.ofSeconds(10)
 
-    /** Typing the whole word correctly this fast means it came without searching. */
-    private val FAST_TYPING: Duration = Duration.ofSeconds(6)
+    /**
+     * Typing the whole word correctly within this allowance means it came without
+     * searching: six seconds, or three plus 0.4 per character for longer answers.
+     *
+     * A flat six seconds made a long phrase unable to count as fluent at all —
+     * in the user's own answers, none of 20 characters or more came in under it,
+     * at about 0.4 s a character. Six seconds is what a seven-letter word gets
+     * either way, so short words are graded as before.
+     */
+    private fun fastTyping(expected: String): Duration =
+        maxOf(Duration.ofSeconds(6), Duration.ofMillis(3_000L + 400L * expected.length))
 
     private val WHITESPACE = Regex("\\s+")
     private val COMMA_SPACING = Regex("\\s*,\\s*")
@@ -49,7 +58,7 @@ object Grading {
      */
     fun forTyping(expected: String, typed: String, elapsed: Duration): Rating {
         if (!isCorrect(expected, typed)) return Rating.AGAIN
-        return if (elapsed <= FAST_TYPING) Rating.EASY else Rating.GOOD
+        return if (elapsed <= fastTyping(expected)) Rating.EASY else Rating.GOOD
     }
 
     /** Whether the typed answer counts as knowing the word at all. */

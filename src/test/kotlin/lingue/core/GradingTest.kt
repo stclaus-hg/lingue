@@ -38,6 +38,19 @@ class GradingChoiceTest {
 class GradingTypingTest {
 
     @Test
+    fun `a short word keeps the six-second allowance`() {
+        assertEquals(Rating.EASY, Grading.forTyping("cozy", "cozy", Duration.ofSeconds(6)))
+        assertEquals(Rating.GOOD, Grading.forTyping("cozy", "cozy", Duration.ofMillis(6_500)))
+    }
+
+    @Test
+    fun `a long phrase gets more time to count as fluent`() {
+        // 3 s + 0.4 s for each of its 20 characters: 11 s.
+        assertEquals(Rating.EASY, Grading.forTyping("to get along with sb", "to get along with sb", Duration.ofMillis(10_900)))
+        assertEquals(Rating.GOOD, Grading.forTyping("to get along with sb", "to get along with sb", Duration.ofMillis(11_500)))
+    }
+
+    @Test
     fun `exact answer typed fast is EASY`() {
         assertEquals(Rating.EASY, Grading.forTyping("apple", "apple", QUICK))
     }

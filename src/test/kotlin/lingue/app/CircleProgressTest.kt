@@ -1,6 +1,7 @@
 package lingue.app
 
 import io.github.openspacedrepetition.Rating
+import io.github.openspacedrepetition.State
 import lingue.core.Limits
 import lingue.core.Question
 import lingue.data.Database
@@ -134,5 +135,35 @@ class CircleProgressTest {
         trainer.pickRight()
 
         assertNull(trainer.circle)
+    }
+
+    /** A word whose choice card settled yesterday, so its typing card is open and unseen. */
+    private fun firstTypingSession(): Pair<Trainer, Question.Typing> {
+        val word = words.add("vague", "расплывчатый", now = now.minus(Duration.ofDays(1)))
+        words.graduateRecognition(word.id, at = now.minus(Duration.ofDays(1)))
+        val trainer = trainer().apply { reload() }
+        return trainer to assertNotNull(trainer.question as? Question.Typing, "expected the typing card")
+    }
+
+    @Test
+    fun `the first right typing of a word settles it at once`() {
+        val (trainer, question) = firstTypingSession()
+
+        now = now.plus(Duration.ofSeconds(20))   // not fast: GOOD, not EASY
+        trainer.answerTyping(question.expected)
+
+        assertEquals(Circle.Graduated(total = 1), trainer.circle)
+        assertEquals(State.REVIEW, assertNotNull(words.findCard(question.card.id)).state)
+        trainer.advance()
+        assertNull(trainer.question, "the word does not come round again")
+    }
+
+    @Test
+    fun `a missed typing needs one right answer`() {
+        val (trainer, question) = firstTypingSession()
+
+        trainer.answerTyping("something else")
+
+        assertEquals(Circle.Going(done = 0, total = 1, slow = false), trainer.circle)
     }
 }

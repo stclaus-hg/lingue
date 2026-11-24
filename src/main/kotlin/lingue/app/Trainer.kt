@@ -579,13 +579,13 @@ class Trainer(
 
     private fun circleOf(before: StudyCard, after: StudyCard, rating: Rating, correct: Boolean, answers: Int): Circle? {
         if (after.state == State.REVIEW) {
-            val total = engine.stepsIn(before.state)
+            val total = engine.stepsIn(before)
             return if (total > 0) Circle.Graduated(total) else null
         }
         if (answers >= CIRCLE_ANSWER_LIMIT) return Circle.Paused
         return Circle.Going(
             done = after.card.step ?: 0,
-            total = engine.stepsIn(after.state),
+            total = engine.stepsIn(after),
             // HARD keeps a card on its step: right, but not a step forward.
             slow = correct && rating == Rating.HARD,
         )
